@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:zk_flutter_refresh/zk_flutter_refresh/zk_flutter_refresh.dart';
 
 void main() => runApp(MainApp());
 
@@ -26,15 +27,24 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List _dataSource;
+  bool _isLoading = false;
   Random _random;
   var _refreshKey = GlobalKey<RefreshIndicatorState>();
+  ZKRefreshController _refreshController;
 
   Future<Null> refreshData() async {
+    if (_isLoading) {
+      return null;
+    }
+    _isLoading = true;
     _refreshKey.currentState?.show(atTop: false);
     await Future.delayed(Duration(seconds: 2));
+    var newDatas = List.generate(_random.nextInt(30), (index) => '条目：$index');
     setState(() {
-      _dataSource = List.generate(_random.nextInt(10), (index) => '条目：$index');
+      _refreshController.needLoadMore = newDatas != null;
     });
+    _isLoading = false;
+    return null;
   }
 
   @override
@@ -42,41 +52,56 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _dataSource = [];
     _random = Random();
+    _refreshController = ZKRefreshController();
     refreshData();
+  }
+
+  void _showRefreshLoading() {
+    Future.delayed(const Duration(seconds: 0), () {
+      _refreshKey.currentState.show().then((e) {});
+      return true;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshController.dataSource =
+        List.generate(_random.nextInt(20), (index) => '条目: $index');
+    if (_refreshController.dataSource.length == 0) {
+      _showRefreshLoading();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    ZKBaseTest test = ZKBaseTest();
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: RefreshIndicator(
-        key: _refreshKey,
-        onRefresh: refreshData,
-        child: ListView.builder(
-          itemCount: _dataSource?.length,
-          itemExtent: 50.0,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(_dataSource[index]),
-            );
-          },
-        ),
+      body: ZKFlutterRefresh(
+        refreshKey: _refreshKey,
+        controller: _refreshController,
+        pulldownRefreshCallback: refreshData,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_refreshController.dataSource[index]),
+          );
+        },
       ),
+      // body: RefreshIndicator(
+      //   key: _refreshKey,
+      //   onRefresh: refreshData,
+      //   child: ListView.builder(
+      //     itemCount: _dataSource?.length,
+      //     itemExtent: 50.0,
+      //     itemBuilder: (context, index) {
+      //       return ListTile(
+      //         title: Text(_dataSource[index]),
+      //       );
+      //     },
+      //   ),
+      // ),
     );
   }
-}
-
-abstract class ZKBaseTest {
-  factory ZKBaseTest({String name}) {
-    return ZKBaseTest();
-  }
-  const ZKBaseTest.constructor() : super();
-}
-
-class ZKTest extends ZKBaseTest {
-  ZKTest() : super.constructor();
 }

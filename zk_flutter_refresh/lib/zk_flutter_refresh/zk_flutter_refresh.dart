@@ -52,14 +52,16 @@ class _ZKFlutterRefreshState extends State<ZKFlutterRefresh> {
   }
 
   int _calcCountOfItems() {
-    return controller.dataSource.length + 2;
+    return controller.dataSource.length + 1;
   }
 
   Widget _buildRefreshFooter() {
     return Container(
-      color: Colors.red,
-      constraints: BoxConstraints.expand(height: 70),
-      child: Text('正在刷新...'),
+      color: Colors.orange,
+      constraints: BoxConstraints.expand(height: 50),
+      child: Center(
+        child: Text('正在刷新', style: TextStyle(color: Colors.white),),
+      ),
     );
   }
 
