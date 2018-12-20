@@ -46,6 +46,7 @@ class _ZKFlutterRefreshState extends State<ZKFlutterRefresh> {
       bool reachBottom = _scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent;
       if (reachBottom && controller.needLoadMore) {
+        print('zhoukang==> 滑动到底部');
         pullupRefreshCallback?.call();
       }
     });
@@ -60,7 +61,10 @@ class _ZKFlutterRefreshState extends State<ZKFlutterRefresh> {
       color: Colors.orange,
       constraints: BoxConstraints.expand(height: 50),
       child: Center(
-        child: Text('正在刷新', style: TextStyle(color: Colors.white),),
+        child: Text(
+          '正在刷新',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
