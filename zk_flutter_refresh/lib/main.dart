@@ -26,29 +26,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isLoading = false;
   Random _random;
   var _refreshKey = GlobalKey<RefreshIndicatorState>();
   ZKRefreshController _refreshController;
   int _page = 0;
 
   Future<Null> requestData() async {
-    if (_isLoading) {
-      return null;
-    }
-    _isLoading = true;
-    _refreshKey.currentState?.show(atTop: false);
+    _refreshKey.currentState?.show(atTop: true);
     await Future.delayed(Duration(seconds: 2));
-    var newDatas = List.generate(_random.nextInt(30), (index) => '这是第$_page页的第$index个条目');
+    var newDatas =
+        List.generate(_random.nextInt(30), (index) => '这是第$_page页的第$index个条目');
     if (_page == 0) {
       _refreshController.dataSource.clear();
     }
-    _refreshController.dataSource.addAll(newDatas);
-
     setState(() {
+    _refreshController.dataSource.addAll(newDatas);
       _refreshController.needLoadMore = newDatas != null;
     });
-    _isLoading = false;
     return null;
   }
 
@@ -57,25 +51,24 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _random = Random();
     _refreshController = ZKRefreshController();
+    _showRefreshLoading();
     requestData();
   }
 
   void _showRefreshLoading() {
-    Future.delayed(const Duration(seconds: 0), () {
-      _refreshKey.currentState.show().then((e) {});
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _refreshKey.currentState.show().then(((e) {}));
       return true;
     });
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _refreshController.dataSource =
-  //       List.generate(_random.nextInt(20), (index) => '条目: $index');
-  //   if (_refreshController.dataSource.length == 0) {
-  //     _showRefreshLoading();
-  //   }
-  // }
+  @override
+  void didChangeDependencies() {
+    if (_refreshController.dataSource.length == 0) {
+      _showRefreshLoading();
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +90,8 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           return Card(
             child: ListTile(
-            title: Text(_refreshController.dataSource[index]),
-          ),
+              title: Text(_refreshController.dataSource[index]),
+            ),
           );
         },
       ),
